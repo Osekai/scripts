@@ -1,0 +1,2 @@
+# osekai scripts
+by electroyan
