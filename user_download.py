@@ -1,7 +1,8 @@
 import requests
-import bs4
+import bs4 as bs
 import json
-
+import urllib.request
+import urllib.error
 
 def getUser(id):
     stdJson = downloadDataByMode(id, "osu")
@@ -37,16 +38,20 @@ def processJson(std, taiko, ctb, mania):
             "replays": std["statistics"]["replays_watched_by_others"]
             + taiko["statistics"]["replays_watched_by_others"]
             + ctb["statistics"]["replays_watched_by_others"]
-            + mania["statistics"]["replays_watched_by_others"],
+            + mania["statistics"]["replays_watched_by_others"], 
             "avatar_url": std["avatar_url"]
             }
 
 
 def downloadDataByMode(id, mode, jsonId="json-user"):
-    link = "https://osu.ppy.sh/users/" + str(id) + "/" + str(mode)
-    res = requests.get(link).text
-    open("test.txt", "w").write(str(res.encode("utf-8")))
-    soup = bs4.BeautifulSoup(res, "html.parser")
-    array = soup.find("script", {"id": jsonId}).string.strip()
-    arr = json.loads(array)
-    return arr
+    uClient = urllib.request.urlopen("https://osu.ppy.sh/users/" + str(id) + "/" + str(mode))
+    page_html = uClient.read()
+    uClient.close()
+    page_soup = bs.BeautifulSoup(page_html, "html.parser")
+    container = page_soup.find("script", {"id": "json-user"})
+    container = str(container);
+    container = container.replace('<script id="json-user" type="application/json">', "")
+    container = container.replace("</script>", "")
+    array = container.strip()
+    data = json.loads(array)
+    return data
