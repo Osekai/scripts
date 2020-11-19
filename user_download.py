@@ -43,14 +43,20 @@ def processJson(std, taiko, ctb, mania):
             }
 
 
-def downloadDataByMode(id, mode, jsonId="json-user"):
+def downloadDataByMode(id, mode):
+    headers = {'Authorization':'Bearer APIV2TOKEN'}
+    oApiRequest = requests.get('https://osu.ppy.sh/api/v2/users/'+str(id)+'/'+str(mode), headers=headers)
+    print("downloaded user: " + oApiRequest.text[0:50]);
+    return json.loads(oApiRequest.text)
+
+def downloadMedalDataByMode(id, mode, jsonId="json-user"):
     uClient = urllib.request.urlopen("https://osu.ppy.sh/users/" + str(id) + "/" + str(mode))
     page_html = uClient.read()
     uClient.close()
     page_soup = bs.BeautifulSoup(page_html, "html.parser")
-    container = page_soup.find("script", {"id": "json-user"})
+    container = page_soup.find("script", {"id": jsonId})
     container = str(container);
-    container = container.replace('<script id="json-user" type="application/json">', "")
+    container = container.replace('<script id="' + jsonId + '" type="application/json">', "")
     container = container.replace("</script>", "")
     array = container.strip()
     data = json.loads(array)
